@@ -1,0 +1,2 @@
+set(VPRO_SIMULATOR_LIB_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../../iss_lib")
+set(VPRO_AUX_LIB_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../../common_lib")

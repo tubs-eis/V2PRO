@@ -1,0 +1,248 @@
+void __load_shift_left(uint32_t id, uint32_t lm_immediate, uint32_t offset, uint32_t alpha, uint32_t beta, uint32_t shift_factor, uint32_t x_end, uint32_t y_end){
+
+    auto command = std::make_shared<CommandVPRO>();
+
+    command->dst.offset = shift_factor & 0x3ffu;
+    if (shift_factor != command->dst.offset){
+        printf_error("__load_shift_left: OVERFLOW on shift_factor!\n");
+    }
+
+    command->src1.sel = SRC_SEL_ADDR;
+    command->src1.beta = beta & 0x1fu;
+    if (beta != command->src1.beta){
+        printf_error("__load_shift_left: OVERFLOW on beta!\n");
+    }
+    command->src1.alpha = alpha & 0x1fu;
+    if (alpha != command->src1.alpha){
+        printf_error("__load_shift_left: OVERFLOW on alpha!\n");
+    }
+    command->src1.offset = offset & 0x3ffu;
+    if (offset != command->src1.offset){
+        printf_error("__load_shift_left: OVERFLOW on offset!\n");
+    }
+
+    command->src2.sel = SRC_SEL_IMM;
+    command->src2.imm = lm_immediate & 0xfffffu;
+    if (lm_immediate != command->src2.imm){
+        printf_error("__load_shift_left: OVERFLOW on lm_immediate!\n");
+    }
+
+    command->is_chain = true;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = id;
+    command->fu_sel = CLASS_MEM;
+    command->type = CommandVPRO::LOADS_SHIFT_LEFT;
+
+    core_->run_vpro_instruction(command);
+}
+
+void __load_shift_right(uint32_t id, uint32_t lm_immediate, uint32_t offset, uint32_t alpha, uint32_t beta, uint32_t shift_factor, uint32_t x_end, uint32_t y_end){
+
+    auto command = std::make_shared<CommandVPRO>();
+
+    command->dst.offset = shift_factor & 0x3ffu;
+    if (shift_factor != command->dst.offset){
+        printf_error("__load_shift_right: OVERFLOW on shift_factor!\n");
+    }
+
+    command->src1.sel = SRC_SEL_ADDR;
+    command->src1.beta = beta & 0x1fu;
+    if (beta != command->src1.beta){
+        printf_error("__load_shift_right: OVERFLOW on beta!\n");
+    }
+    command->src1.alpha = alpha & 0x1fu;
+    if (alpha != command->src1.alpha){
+        printf_error("__load_shift_right: OVERFLOW on alpha!\n");
+    }
+    command->src1.offset = offset & 0x3ffu;
+    if (offset != command->src1.offset){
+        printf_error("__load_shift_right: OVERFLOW on offset!\n");
+    }
+
+    command->src2.sel = SRC_SEL_IMM;
+    command->src2.imm = lm_immediate & 0xfffffu;
+    if (lm_immediate != command->src2.imm){
+        printf_error("__load_shift_right: OVERFLOW on lm_immediate!\n");
+    }
+
+    command->is_chain = true;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = id;
+    command->fu_sel = CLASS_MEM;
+    command->type = CommandVPRO::LOADS_SHIFT_RIGHT;
+
+
+    core_->run_vpro_instruction(command);
+}
+
+void __load_reverse(uint32_t lm_immediate, uint32_t offset, int32_t alpha, int32_t beta, uint32_t x_end, uint32_t y_end){
+
+    auto command = std::make_shared<CommandVPRO>();
+
+    if(alpha < 0 && beta < 0) command->dst.imm = 0b11;
+    else if(alpha < 0 && beta >= 0) command->dst.imm = 0b10;
+    else if(alpha >= 0 && beta >= 0) command->dst.imm = 0b00;
+    else  command->dst.imm = 0b01;
+
+
+    command->src1.sel = SRC_SEL_ADDR;
+    command->src1.beta = abs(beta) & 0x1fu;
+    if (abs(beta) != command->src1.beta){
+        printf_error("__load_reverse: OVERFLOW on beta!\n");
+    }
+    command->src1.alpha = abs(alpha) & 0x1fu;
+    if (abs(alpha) != command->src1.alpha){
+        printf_error("__load_reverse: OVERFLOW on alpha!\n");
+    }
+    command->src1.offset = offset & 0x3ffu;
+    if (offset != command->src1.offset){
+        printf_error("__load_reverse: OVERFLOW on offset!\n");
+    }
+
+    command->src2.sel = SRC_SEL_IMM;
+    command->src2.imm = lm_immediate & 0xfffffu;
+    if (lm_immediate != command->src2.imm){
+        printf_error("__load_reverse: OVERFLOW on lm_immediate!\n");
+    }
+
+    command->is_chain = true;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = LS;
+    command->fu_sel = CLASS_MEM;
+    command->type = CommandVPRO::LOAD_REVERSE;
+
+    core_->run_vpro_instruction(command);
+}
+
+
+//todo this function does not work yet
+//in load_reverse the sign of alpha and beta is encoded in the destination immediate, as it is never used
+void __store_reverse(uint32_t id, uint32_t lm_immediate, uint32_t offset, int32_t alpha, int32_t beta, uint32_t x_end, uint32_t y_end, bool delayed_chain){
+
+    auto command = std::make_shared<CommandVPRO>();
+
+    command->dst.sel = SRC_SEL_ADDR; // must be ADDR!
+    command->dst.alpha = alpha & 0x1fu;
+    command->dst.beta = beta & 0x1fu;
+    command->dst.offset = offset & 0x3ffu;
+    if (beta != command->dst.beta){
+        printf_error("__store_reverse: OVERFLOW on beta!\n");
+    }
+    if (alpha != command->dst.alpha){
+        printf_error("__store_reverse: OVERFLOW on alpha!\n");
+    }
+    if (offset != command->dst.offset){
+        printf_error("__store_reverse: OVERFLOW on offset!\n");
+    }
+
+    if(alpha < 0 && beta < 0) command->src1.imm = 0b11;
+    else if(alpha < 0 && beta >= 0) command->src1.imm = 0b10;
+    else if(alpha >= 0 && beta >= 0) command->src1.imm = 0b00;
+    else  command->src1.imm = 0b01;
+    command->src1.sel = SRC_SEL_CHAIN;
+    command->src1.delayed_chain = delayed_chain;
+
+    command->src2.sel = SRC_SEL_IMM;
+    command->src2.imm = lm_immediate & 0xfffffu;
+    if (lm_immediate != command->src2.imm){
+        printf_error("__store_reverse: OVERFLOW on lm_immediate!\n");
+    }
+
+    command->is_chain = true;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = LS;
+    command->fu_sel = CLASS_MEM;
+    command->type = CommandVPRO::STORE_REVERSE;
+
+    core_->run_vpro_instruction(command);
+}
+
+void __find_max_vector(LANE id, uint32_t dst, uint32_t src1_sel, uint32_t src1, uint32_t x_end, uint32_t y_end,
+                       bool find_index, bool chain, bool blocking, bool flag_update)
+{
+    auto command = std::make_shared<CommandVPRO>();
+
+    command->dst.sel = SRC_SEL_ADDR; // must be ADDR!
+    command->dst.imm = dst & 0xfffff;
+    command->dst.beta = dst & 0x1f;
+    command->dst.alpha = (dst >> 5) & 0x1f;
+    command->dst.offset = (dst >> 10) & 0x3ff;
+
+    command->src1.sel = (uint8_t) src1_sel;
+    command->src1.imm = src1 & 0xfffff;
+    command->src1.beta = src1 & 0x1f;
+    command->src1.alpha = (src1 >> 5) & 0x1f;
+    command->src1.offset = (src1 >> 10) & 0x3ff;
+    if (src1_sel == SRC_SEL_CHAIN){
+        command->src1.chain_id = 1 + (src1 & 0x7fff); // TODO chain id + 1 is ugly! use of src1_sel ? -> e.g. in Lanes forward,...
+        command->src1.chain_left = ((src1 & 0x8000) == 0x8000);
+        command->src1.chain_right = ((src1 & 0x8001) == 0x8001);
+    } else if (src1_sel == SRC_SEL_LS){
+        command->src1.chain_ls = true;
+    }
+    command->src1.delayed_chain = (command->src1.chain_left || command->src1.chain_right || command->src1.chain_ls) && (src1 & 0x0002) == 0x0002;
+
+    command->src2.alpha = 1;
+    command->src2.beta = x_end + 1;
+    if(find_index) command->src2.offset = 1;
+    else command->src2.offset = 0;
+
+    command->is_chain = chain;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = id;
+    command->func = 0b1110;
+    command->fu_sel = CLASS_SPECIAL;
+    command->type = CommandVPRO::MAX_VECTOR;
+    command->blocking = blocking;
+    command->flag_update = flag_update;
+
+    core_->run_vpro_instruction(command);
+}
+
+void __find_min_vector(LANE id, uint32_t dst, uint32_t src1_sel, uint32_t src1, uint32_t x_end, uint32_t y_end,
+        bool find_index, bool chain, bool blocking, bool flag_update)
+{
+    auto command = std::make_shared<CommandVPRO>();
+
+    command->dst.sel = SRC_SEL_ADDR; // must be ADDR!
+    command->dst.imm = dst & 0xfffff;
+    command->dst.beta = dst & 0x1f;
+    command->dst.alpha = (dst >> 5) & 0x1f;
+    command->dst.offset = (dst >> 10) & 0x3ff;
+
+    command->src1.sel = (uint8_t) src1_sel;
+    command->src1.imm = src1 & 0xfffff;
+    command->src1.beta = src1 & 0x1f;
+    command->src1.alpha = (src1 >> 6) & 0x1f;
+    command->src1.offset = (src1 >> 12) & 0x3ff;
+    if (src1_sel == SRC_SEL_CHAIN){
+    command->src1.chain_id = 1 + (src1 & 0x7fff); // TODO chain id + 1 is ugly! use of src1_sel ? -> e.g. in Lanes forward,...
+    command->src1.chain_left = ((src1 & 0x8000) == 0x8000);
+    command->src1.chain_right = ((src1 & 0x8001) == 0x8001);
+    } else if (src1_sel == SRC_SEL_LS){
+    command->src1.chain_ls = true;
+    }
+    command->src1.delayed_chain = (command->src1.chain_left || command->src1.chain_right || command->src1.chain_ls) && (src1 & 0x0002) == 0x0002;
+
+    command->src2.alpha = 1;
+    command->src2.beta = x_end + 1;
+    if(find_index) command->src2.offset = 1;
+    else command->src2.offset = 0;
+
+    command->is_chain = chain;
+    command->x_end = x_end;
+    command->y_end = y_end;
+    command->id_mask = id;
+    command->func = 0b1101;
+    command->fu_sel = CLASS_SPECIAL;
+    command->type = CommandVPRO::MIN_VECTOR;
+    command->blocking = blocking;
+    command->flag_update = flag_update;
+
+    core_->run_vpro_instruction(command);
+}

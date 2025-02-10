@@ -1,0 +1,112 @@
+<!--
+  Copyright (c) 2024 Chair for Chip Design for Embedded Computing,
+                     Technische Universitaet Braunschweig, Germany
+                     www.tu-braunschweig.de/en/eis
+  
+  Use of this source code is governed by an MIT-style
+  license that can be found in the LICENSE file or at
+  https://opensource.org/licenses/MIT
+  
+-->
+<html>
+<head>
+<title>ISS - How to Doc</title>
+<style>
+.c{
+	padding-left: 2rem;
+}
+</style>
+</head>
+<body>
+
+<h1>How to Doc</h1>
+<ul class="c">
+<li>We have selected the Javadoc Style</li>
+<li><a href="#gObj">global Objects | Functions Missing</a></li>
+<li><a href="https://www.doxygen.nl/manual/docblocks.html" target="_blank">More Infos</a></li>
+</ul>
+
+<h2>Example Class</h2>
+<div class="c">
+/**<br>
+ *  A test class. A more elaborate class description.<br>
+ */<br>
+ <br>
+class Javadoc_Test<br>
+{<br>
+  public:<br>
+ <br>
+    /** <br>
+     * An enum.<br>
+     * More detailed enum description.<br>
+     */<br>
+ <br>
+    enum TEnum { <br>
+          TVal1, /**< enum value TVal1. */  <br>
+          TVal2, /**< enum value TVal2. */  <br>
+          TVal3  /**< enum value TVal3. */  <br>
+         } <br>
+       *enumPtr, /**< enum pointer. Details. */<br>
+       enumVar;  /**< enum variable. Details. */<br>
+       <br>
+      /**<br>
+       * A constructor.<br>
+       * A more elaborate description of the constructor.<br>
+       */<br>
+      Javadoc_Test();<br>
+
+      /**<br>
+       * A destructor.<br>
+       * A more elaborate description of the destructor.<br>
+       */<br>
+     ~Javadoc_Test();<br>
+    <br>
+      /**<br>
+       * a normal member taking two arguments and returning an integer value.<br>
+       * @param a an integer argument.<br>
+       * @param s a constant character pointer.<br>
+       * @see Javadoc_Test()<br>
+       * @see ~Javadoc_Test()<br>
+       * @see testMeToo()<br>
+       * @see publicVar()<br>
+       * @return The test results<br>
+       */<br>
+       int testMe(int a,const char *s);<br>
+
+      /**<br>
+       * A pure virtual member.<br>
+       * @see testMe()<br>
+       * @param c1 the first argument.<br>
+       * @param c2 the second argument.<br>
+       */<br>
+       virtual void testMeToo(char c1,char c2) = 0;<br>
+   <br>
+      /** <br>
+       * a public variable.<br>
+       * Details.<br>
+       */<br>
+       int publicVar;<br>
+       <br>
+      /**<br>
+       * a function variable.<br>
+       * Details.<br>
+       */<br>
+       int (*handler)(int a,int b);<br>
+};<br>
+<br>
+</div>
+<a name="gObj"><h2>Global Objects</h2></a>
+<div class="c">
+Attention: <br>
+to document global objects (functions, typedefs, enum, macros, etc), you must document the file in which they are defined. In other words, there must at least be a <br>
+<br>
+<b>/** @file */ </b><br>
+<br>
+line in this file.<br>
+</div>
+
+<hr>
+Version 0.0.1
+
+</body>
+</html>

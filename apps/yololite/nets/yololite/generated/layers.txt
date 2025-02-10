@@ -1,0 +1,266 @@
+LAYER 'Layer_1 CONV2+BIAS+RELU' (1), Conv2D
+in_channels             3
+out_channels            16
+number                  1
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               32
+seg_out_h               30
+seg_in_w                34
+seg_in_h                32
+conv_result_shift_right 7
+relu_6_shift_left       0
+bias_shift_right        -5
+store_shift_right       8
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             2
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 17  right  1  value  0
+input :   mm_base  0x81000000  x               224  y               224  y_stride        224  channels          3
+output:   mm_base  0x81049800  x               112  y               112  y_stride        112  channels         16
+axis 0
+dynamic_shape 0
+LAYER 'Layer_2 CONV2+BIAS+RELU' (2), Conv2D
+in_channels             16
+out_channels            32
+number                  2
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               28
+seg_out_h               28
+seg_in_w                30
+seg_in_h                30
+conv_result_shift_right 6
+relu_6_shift_left       0
+bias_shift_right        -3
+store_shift_right       7
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             2
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 1  right  1  value  0
+input :   mm_base  0x81049800  x               112  y               112  y_stride        112  channels         16
+output:   mm_base  0x810b2800  x                56  y                56  y_stride         56  channels         32
+axis 0
+dynamic_shape 0
+LAYER 'Layer_3 CONV2+BIAS+RELU' (3), Conv2D
+in_channels             32
+out_channels            64
+number                  3
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               28
+seg_out_h               28
+seg_in_w                30
+seg_in_h                30
+conv_result_shift_right 6
+relu_6_shift_left       0
+bias_shift_right        -4
+store_shift_right       7
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             2
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 1  right  1  value  0
+input :   mm_base  0x810b2800  x                56  y                56  y_stride         56  channels         32
+output:   mm_base  0x810e3800  x                28  y                28  y_stride         28  channels         64
+axis 0
+dynamic_shape 0
+LAYER 'Layer_4 CONV2+BIAS+RELU' (4), Conv2D
+in_channels             64
+out_channels            128
+number                  4
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               28
+seg_out_h               28
+seg_in_w                30
+seg_in_h                30
+conv_result_shift_right 6
+relu_6_shift_left       0
+bias_shift_right        -3
+store_shift_right       7
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             2
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 1  right  1  value  0
+input :   mm_base  0x810e3800  x                28  y                28  y_stride         28  channels         64
+output:   mm_base  0x810fc000  x                14  y                14  y_stride         14  channels        128
+axis 0
+dynamic_shape 0
+LAYER 'Layer_5 CONV2+BIAS+RELU' (5), Conv2D
+in_channels             128
+out_channels            128
+number                  5
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               14
+seg_out_h               14
+seg_in_w                16
+seg_in_h                16
+conv_result_shift_right 5
+relu_6_shift_left       0
+bias_shift_right        -3
+store_shift_right       7
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             2
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 1  right  1  value  0
+input :   mm_base  0x810fc000  x                14  y                14  y_stride         14  channels        128
+output:   mm_base  0x81108400  x                 7  y                 7  y_stride          7  channels        128
+axis 0
+dynamic_shape 0
+LAYER 'Layer_6 CONV2+BIAS+RELU' (6), Conv2D
+in_channels             128
+out_channels            256
+number                  6
+type                    CONV2
+stride                  1
+kernel_length           3
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               7
+seg_out_h               7
+seg_in_w                9
+seg_in_h                9
+conv_result_shift_right 7
+relu_6_shift_left       0
+bias_shift_right        -2
+store_shift_right       7
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             1
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              LEAKY
+pad   :   top    1  left   1  bottom 1  right  1  value  0
+input :   mm_base  0x81108400  x                 7  y                 7  y_stride          7  channels        128
+output:   mm_base  0x8110b500  x                 7  y                 7  y_stride          7  channels        256
+axis 0
+dynamic_shape 0
+LAYER 'Layer_7 CONV2+BIAS+NONE' (7), Conv2D
+in_channels             256
+out_channels            125
+number                  7
+type                    CONV2
+stride                  1
+kernel_length           1
+dilation_rate_w         1
+dilation_rate_h         1
+seg_out_w               7
+seg_out_h               7
+seg_in_w                7
+seg_in_h                7
+conv_result_shift_right 5
+relu_6_shift_left       0
+bias_shift_right        -5
+store_shift_right       8
+elwise_1_left_shift     0
+elwise_0_left_shift     0
+pool_stride             1
+pool_size_w             0
+pool_size_h             0
+pool_size_ch            0
+pool_stride_w           0
+pool_stride_h           0
+pool_stride_ch          0
+pool_avg_shiftr         0
+deform_max_offset_x     0
+deform_max_offset_y     0
+deform_static_offsets   0
+parallel_outchannels_per_lane   1
+parallel_inchannels_per_lane    1
+activation              NONE
+pad   :   top    0  left   0  bottom 0  right  0  value  0
+input :   mm_base  0x8110b500  x                 7  y                 7  y_stride          7  channels        256
+output:   mm_base  0x81111700  x                 7  y                 7  y_stride          7  channels        125
+axis 0
+dynamic_shape 0

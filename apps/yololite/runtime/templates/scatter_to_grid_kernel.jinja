@@ -1,0 +1,142 @@
+#ifndef SCATTER_TO_GRID_KERNEL_H
+#define SCATTER_TO_GRID_KERNEL_H
+
+#include "bif.h"
+#include <cstring>
+#include "riscv/eisV_hardware_info.hpp"
+#include "../vpro_functions.h"
+#include "dynamic_shape_kernel.h"
+#include "memutils.h"
+
+using namespace BIF;
+
+#define PP_MAX_POINTS {{ PP_MAX_POINTS | default(2048) }}
+#define PP_GRID_X {{ PP_GRID_X }}
+#define PP_GRID_Y {{ PP_GRID_Y }}
+#define PP_OUT_CH {{ PP_OUT_CH }}
+#define GRID_SIZE PP_GRID_Y * PP_GRID_X * PP_OUT_CH * sizeof(int16_t)
+
+// for more than 8192 input points the copy operation needs to be segmented
+static_assert(PP_MAX_POINTS <= 8192);
+
+
+inline void scatter_to_grid_riscv(const LAYER &layer, const COMMAND_SEGMENT *commands, const uint32_t cmd_size) {
+    dcma_flush(); 
+    dcma_reset();
+    
+    uint16_t n_points = (layer.dynamic_shape) ? dynamic_shape::x : PP_MAX_POINTS;
+    static int16_t x[PP_MAX_POINTS];
+    static int16_t y[PP_MAX_POINTS];
+    static uint32_t indices[PP_MAX_POINTS];
+
+    // arrays for grid indices and features located in riscv data-cache
+    static int16_t features[PP_MAX_POINTS];
+
+    auto cmd = commands[0];
+
+    // load x/y coordinates into riscv data-cache
+    _memcopy((void *) x, (void *) (cmd.scatter.mm_addr_coords),              n_points * sizeof(uint16_t));
+    _memcopy((void *) y, (void *) (cmd.scatter.mm_addr_coords + 2*n_points), n_points * sizeof(uint16_t));
+
+    // calculate flat grid indices and write them into x
+    for (int i = 0; i < n_points; i++) {
+        uint32_t x_idx = ((int(x[i]) - cmd.scatter.xmin_fixed) >> cmd.scatter.index_shift);
+        uint32_t y_idx = ((int(y[i]) - cmd.scatter.ymin_fixed) >> cmd.scatter.index_shift);
+        indices[i] = x_idx + y_idx * PP_GRID_X;
+    }
+   
+    // scatter features to grid
+    for (uint oc = 0; oc < cmd_size; oc++) { // one command per output channel
+        cmd = commands[oc];
+
+        // initializing the grid with zeros before max-pooling only works, if features are positive,
+        // e.g. a ReLU preceeds the scattering. Otherwise grid would need to be initialized with -2**15
+        int16_t grid[PP_GRID_Y*PP_GRID_X] = {0};
+
+        // load features into riscv data-cache
+        _memcopy((void *) features, (void *) cmd.scatter.mm_addr_features, n_points * sizeof(int16_t));
+
+        for (uint i = 0; i < n_points; i++) {
+            grid[indices[i]] = std::max(grid[indices[i]], features[i]);
+        }
+
+        // write grid to .vpro section
+#ifdef SIMULATION
+        for (uint i = 0; i < GRID_SIZE; i++)
+            core_->dbgMemWrite(cmd.scatter.mm_addr_grid + i, ((uint8_t *)grid) + i);
+#else
+        memcpy((void *) cmd.scatter.mm_addr_grid, (void *) grid, GRID_SIZE);
+#endif
+    }
+}
+
+inline void scatter_to_grid_vpro_dma(const LAYER &layer, const COMMAND_SEGMENT *commands, const uint32_t cmd_size) {
+
+    uint32_t last_valid_cluster = 1 << (VPRO_CFG::CLUSTERS - 1);
+    uint16_t n_points = (layer.dynamic_shape) ? dynamic_shape::x : PP_MAX_POINTS;
+
+    static int16_t x[PP_MAX_POINTS];
+    static int16_t y[PP_MAX_POINTS];
+    static uint32_t indices[PP_MAX_POINTS];
+    static int16_t features[PP_OUT_CH][PP_MAX_POINTS];
+
+    // initializing the grid with zeros before max-pooling only works, if features are positive,
+    // e.g. a ReLU preceeds the scattering. Otherwise grid would need to be initialized with -2**15
+    //static int16_t __attribute__((section(".data")))
+    int16_t grid[PP_OUT_CH][PP_GRID_Y*PP_GRID_X] = {0};
+    aux_flush_dcache();
+
+    auto cmd = commands[0];
+    
+    // load x/y coordinates into riscv data-cache
+    _memcopy_vpro(0x1, intptr_t(x), intptr_t(cmd.scatter.mm_addr_coords),              n_points);
+    _memcopy_vpro(0x2, intptr_t(y), intptr_t(cmd.scatter.mm_addr_coords + 2*n_points), n_points);
+    
+    aux_clr_dcache(); // make sure cache is refreshed when accessing x and y
+    dma_wait_to_finish();
+    dcma_flush();
+
+    // distribute copy of feature channels over clusters
+    for (uint32_t oc=0, cl=0x1; oc < cmd_size; oc++) {
+        _memcopy_vpro(cl, intptr_t(features[oc]), intptr_t(commands[oc].scatter.mm_addr_features), n_points);
+        cl = (cl == last_valid_cluster) ? 0x1 : cl << 1;
+    }
+
+    // calculate flat grid indices and write them into x
+    for (int i = 0; i < n_points; i++) {
+        uint32_t x_idx = ((int(x[i]) - cmd.scatter.xmin_fixed) >> cmd.scatter.index_shift);
+        uint32_t y_idx = ((int(y[i]) - cmd.scatter.ymin_fixed) >> cmd.scatter.index_shift);
+        indices[i] = x_idx + y_idx * PP_GRID_X;
+    }
+   
+    // wait until feature copy is finished
+    dma_wait_to_finish(0xffffffff);
+    dcma_flush();
+
+    // scatter features to grid
+    for (uint oc = 0; oc < cmd_size; oc++) { // one command per output channel 
+        for (uint i = 0; i < n_points; i++) {
+            grid[oc][indices[i]] = std::max(grid[oc][indices[i]], features[oc][i]);
+        }
+    }
+    aux_flush_dcache(); // ensure that results are written back from cache
+
+    // store the grid in .vpro section
+    intptr_t curr_dst = intptr_t(cmd.scatter.mm_addr_grid);
+    intptr_t curr_src = intptr_t(grid);
+    uint32_t memcopy_size_bytes = 2*cmd.scatter.memcopy_size;
+
+    // distribute copy of grid over clusters
+    uint32_t transferred_bytes = 0;
+    while (transferred_bytes < GRID_SIZE) {
+        for (uint32_t cl=0x1; cl <= last_valid_cluster && transferred_bytes < GRID_SIZE; cl <<= 1, transferred_bytes+=memcopy_size_bytes) {
+            _memcopy_vpro(cl, curr_dst, curr_src, cmd.scatter.memcopy_size);
+            curr_src += memcopy_size_bytes;
+            curr_dst += memcopy_size_bytes;
+        }
+        dma_wait_to_finish();
+    }
+
+}
+
+#endif // SCATTER_TO_GRID_KERNEL_H
