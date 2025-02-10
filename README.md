@@ -44,6 +44,8 @@ Further publications:
 
 [4] Nolting, S.; Giesemann, F.; Hartig, J.; Schmider, A.; Payá-Vayá, G. Application-Specific Soft-Core Vector Processor for Advanced Driver Assistance Systems. In 27th International Conference on Field Programmable Logic and Applications (FPL); IEEE, 2017; pp 1–2. https://doi.org/10.23919/fpl.2017.8056836
 
+More publications can be found here: https://www.tu-braunschweig.de/en/eis/publications
+
 # References
 [5] J. Pedoeem and R. Huang, “YOLO-LITE: A Real-Time Object Detection Algorithm Optimized for Non-GPU Computers,” Nov. 13, 2018, arXiv: arXiv:1811.05588. doi: 10.48550/arXiv.1811.05588.
 
